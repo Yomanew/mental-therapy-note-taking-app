@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Therapy Notes App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #2c3e50, #3498db);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin-bottom: 10px;
+            font-size: 2.2em;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .main-content {
+            display: flex;
+            min-height: 600px;
+        }
+
+        .sidebar {
+            width: 300px;
+            background: #f8f9fa;
+            border-right: 1px solid #e9ecef;
+            padding: 20px;
+        }
+
+        .note-form {
+            flex: 1;
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.1em;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .session-timer {
+            background: #e8f5e8;
+            border: 2px solid #28a745;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .timer-display {
+            font-size: 2em;
+            font-weight: bold;
+            color: #28a745;
+            margin-bottom: 10px;
+        }
+
+        .timer-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .note-format-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .tab {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: #6c757d;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            color: #3498db;
+            border-bottom: 3px solid #3498db;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .notes-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .note-item {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .note-item:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .note-item.selected {
+            border-color: #3498db;
+            background: #f8f9ff;
+        }
+
+        .note-date {
+            font-size: 12px;
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+
+        .note-client {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .note-preview {
+            font-size: 14px;
+            color: #495057;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .privacy-notice {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .privacy-notice h4 {
+            color: #856404;
+            margin-bottom: 8px;
+        }
+
+        .privacy-notice p {
+            color: #856404;
+            font-size: 13px;
+            margin: 0;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: auto;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+            }
+            
+            .form-row {
+                flex-direction: column;
+            }
+            
+            .action-buttons {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Therapy Notes Manager</h1>
+            <p>Professional note-taking system for mental health practitioners</p>
+        </div>
+
+        <div class="main-content">
+            <div class="sidebar">
+                <div class="privacy-notice">
+                    <h4>🔒 Privacy Notice</h4>
+                    <p>All data is stored locally in your browser. No information is transmitted to external servers.</p>
+                </div>
+
+                <div class="session-timer">
+                    <div class="timer-display" id="timerDisplay">00:00:00</div>
+                    <div class="timer-controls">
+                        <button class="btn btn-success" onclick="startTimer()">Start</button>
+                        <button class="btn btn-warning" onclick="pauseTimer()">Pause</button>
+                        <button class="btn btn-danger" onclick="resetTimer()">Reset</button>
+                    </div>
+                </div>
+
+                <input type="text" class="search-box" id="searchBox" placeholder="Search notes..." onkeyup="searchNotes()">
+                
+                <div class="notes-list" id="notesList">
+                    <!-- Notes will be populated here -->
+                </div>
+            </div>
+
+            <div class="note-form">
+                <div class="note-format-tabs">
+                    <button class="tab active" onclick="switchTab('birp')">BIRP Notes</button>
+                    <button class="tab" onclick="switchTab('soap')">SOAP Notes</button>
+                    <button class="tab" onclick="switchTab('progress')">Progress Notes</button>
+                </div>
+
+                <form id="noteForm">
+                    <!-- Client Information -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="clientName">Client Name/ID:</label>
+                            <input type="text" id="clientName" name="clientName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="sessionDate">Session Date:</label>
+                            <input type="date" id="sessionDate" name="sessionDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="sessionTime">Session Time:</label>
+                            <input type="time" id="sessionTime" name="sessionTime" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="sessionDuration">Duration (minutes):</label>
+                            <input type="number" id="sessionDuration" name="sessionDuration" min="15" max="180" value="50">
+                        </div>
+                        <div class="form-group">
+                            <label for="sessionType">Session Type:</label>
+                            <select id="sessionType" name="sessionType">
+                                <option value="individual">Individual Therapy</option>
+                                <option value="group">Group Therapy</option>
+                                <option value="family">Family Therapy</option>
+                                <option value="couples">Couples Therapy</option>
+                                <option value="assessment">Assessment</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="therapistName">Therapist:</label>
+                            <input type="text" id="therapistName" name="therapistName" required>
+                        </div>
+                    </div>
+
+                    <!-- BIRP Format -->
+                    <div id="birp-content" class="tab-content active">
+                        <div class="form-group">
+                            <label for="behavior">Behavior (Observable behaviors, mood, affect):</label>
+                            <textarea id="behavior" name="behavior" rows="4" placeholder="Describe client's presentation, mood, affect, and observable behaviors during the session..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="intervention">Intervention (Therapeutic techniques used):</label>
+                            <textarea id="intervention" name="intervention" rows="4" placeholder="Detail the therapeutic interventions, techniques, and approaches used during the session..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="response">Response (Client's reaction to interventions):</label>
+                            <textarea id="response" name="response" rows="4" placeholder="Document how the client responded to the interventions and any progress noted..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="plan">Plan (Next steps and treatment plan):</label>
+                            <textarea id="plan" name="plan" rows="4" placeholder="Outline the plan for future sessions, homework assignments, and treatment adjustments..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- SOAP Format -->
+                    <div id="soap-content" class="tab-content">
+                        <div class="form-group">
+                            <label for="subjective">Subjective (Client's reported experience):</label>
+                            <textarea id="subjective" name="subjective" rows="4" placeholder="Document what the client reports about their condition, symptoms, and concerns..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="objective">Objective (Observable facts and behaviors):</label>
+                            <textarea id="objective" name="objective" rows="4" placeholder="Record objective observations, appearance, behavior, and measurable data..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="assessment">Assessment (Clinical impression and diagnosis):</label>
+                            <textarea id="assessment" name="assessment" rows="4" placeholder="Provide clinical assessment, diagnosis, and interpretation of data..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="planSoap">Plan (Treatment plan and next steps):</label>
+                            <textarea id="planSoap" name="planSoap" rows="4" placeholder="Detail the treatment plan, interventions, and follow-up actions..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Progress Notes Format -->
+                    <div id="progress-content" class="tab-content">
+                        <div class="form-group">
+                            <label for="progressSummary">Session Summary:</label>
+                            <textarea id="progressSummary" name="progressSummary" rows="4" placeholder="Provide a comprehensive summary of the therapy session..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="treatmentGoals">Treatment Goals Progress:</label>
+                            <textarea id="treatmentGoals" name="treatmentGoals" rows="3" placeholder="Document progress toward established treatment goals..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="clinicalObservations">Clinical Observations:</label>
+                            <textarea id="clinicalObservations" name="clinicalObservations" rows="3" placeholder="Note relevant clinical observations and changes..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="nextSession">Next Session Plan:</label>
+                            <textarea id="nextSession" name="nextSession" rows="3" placeholder="Plan for the next session and any assignments..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Safety Assessment -->
+                    <div class="form-group">
+                        <label>Safety Assessment:</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="suicidalIdeation" name="safetyRisk" value="suicidal">
+                                <label for="suicidalIdeation">Suicidal Ideation</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="homicidalIdeation" name="safetyRisk" value="homicidal">
+                                <label for="homicidalIdeation">Homicidal Ideation</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="selfHarm" name="safetyRisk" value="selfharm">
+                                <label for="selfHarm">Self-Harm Risk</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="noSafetyRisk" name="safetyRisk" value="none" checked>
+                                <label for="noSafetyRisk">No Safety Concerns</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Fields -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="diagnosis">Primary Diagnosis (ICD-10):</label>
+                            <input type="text" id="diagnosis" name="diagnosis" placeholder="e.g., F32.1 - Major Depressive Disorder">
+                        </div>
+                        <div class="form-group">
+                            <label for="medications">Current Medications:</label>
+                            <input type="text" id="medications" name="medications" placeholder="List current medications">
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button type="button" class="btn btn-primary" onclick="saveNote()">💾 Save Note</button>
+                        <button type="button" class="btn btn-secondary" onclick="clearForm()">🗑️ Clear Form</button>
+                        <button type="button" class="btn btn-success" onclick="exportNotes()">📤 Export All Notes</button>
+                        <button type="button" class="btn btn-warning" onclick="importNotes()">📥 Import Notes</button>
+                        <button type="button" class="btn btn-danger" onclick="deleteNote()">❌ Delete Selected</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <input type="file" id="importFile" accept=".json" style="display: none;" onchange="handleFileImport(event)">
+
+    <script>
+        // Global variables
+        let notes = JSON.parse(localStorage.getItem('therapyNotes') || '[]');
+        let currentNoteId = null;
+        let timerInterval = null;
+        let startTime = null;
+        let pausedTime = 0;
+        let isTimerRunning = false;
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            loadNotes();
+            setCurrentDate();
+            
+            // Set default therapist name if stored
+            const savedTherapist = localStorage.getItem('defaultTherapist');
+            if (savedTherapist) {
+                document.getElementById('therapistName').value = savedTherapist;
+            }
+        });
+
+        // Timer functions
+        function startTimer() {
+            if (!isTimerRunning) {
+                startTime = Date.now() - pausedTime;
+                timerInterval = setInterval(updateTimer, 1000);
+                isTimerRunning = true;
+            }
+        }
+
+        function pauseTimer() {
+            if (isTimerRunning) {
+                clearInterval(timerInterval);
+                pausedTime = Date.now() - startTime;
+                isTimerRunning = false;
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            startTime = null;
+            pausedTime = 0;
+            isTimerRunning = false;
+            document.getElementById('timerDisplay').textContent = '00:00:00';
+        }
+
+        function updateTimer() {
+            const elapsed = Date.now() - startTime;
+            const hours = Math.floor(elapsed / 3600000);
+            const minutes = Math.floor((elapsed % 3600000) / 60000);
+            const seconds = Math.floor((elapsed % 60000) / 1000);
+            
+            document.getElementById('timerDisplay').textContent = 
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Tab switching
+        function switchTab(tabName) {
+            // Update active tab
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update active content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(tabName + '-content').classList.add('active');
+        }
+
+        // Set current date
+        function setCurrentDate() {
+            const today = new Date();
+            const dateStr = today.toISOString().split('T')[0];
+            const timeStr = today.toTimeString().split(' ')[0].substring(0, 5);
+            
+            document.getElementById('sessionDate').value = dateStr;
+            document.getElementById('sessionTime').value = timeStr;
+        }
+
+        // Save note
+        function saveNote() {
+            const formData = new FormData(document.getElementById('noteForm'));
+            const noteData = {};
+            
+            // Collect all form data
+            for (let [key, value] of formData.entries()) {
+                if (noteData[key]) {
+                    if (Array.isArray(noteData[key])) {
+                        noteData[key].push(value);
+                    } else {
+                        noteData[key] = [noteData[key], value];
+                    }
+                } else {
+                    noteData[key] = value;
+                }
+            }
+
+            // Add safety risks as array
+            const safetyRisks = [];
+            document.querySelectorAll('input[name="safetyRisk"]:checked').forEach(checkbox => {
+                safetyRisks.push(checkbox.value);
+            });
+            noteData.safetyRisks = safetyRisks;
+
+            // Add metadata
+            noteData.id = currentNoteId || Date.now().toString();
+            noteData.createdAt = new Date().toISOString();
+            noteData.lastModified = new Date().toISOString();
+
+            // Save therapist name as default
+            localStorage.setItem('defaultTherapist', noteData.therapistName);
+
+            // Update or add note
+            const existingIndex = notes.findIndex(note => note.id === noteData.id);
+            if (existingIndex >= 0) {
+                notes[existingIndex] = noteData;
+            } else {
+                notes.unshift(noteData);
+            }
+
+            // Save to localStorage
+            localStorage.setItem('therapyNotes', JSON.stringify(notes));
+            
+            // Refresh notes list
+            loadNotes();
+            
+            // Show success message
+            alert('Note saved successfully!');
+        }
+
+        // Load notes into sidebar
+        function loadNotes() {
+            const notesList = document.getElementById('notesList');
+            notesList.innerHTML = '';
+
+            if (notes.length === 0) {
+                notesList.innerHTML = '<p style="text-align: center; color: #6c757d; padding: 20px;">No notes yet</p>';
+                return;
+            }
+
+            notes.forEach(note => {
+                const noteElement = document.createElement('div');
+                noteElement.className = 'note-item';
+                noteElement.onclick = () => selectNote(note.id);
+                
+                const date = new Date(note.sessionDate).toLocaleDateString();
+                const preview = note.behavior || note.subjective || note.progressSummary || 'No content';
+                
+                noteElement.innerHTML = `
+                    <div class="note-date">${date} - ${note.sessionTime || 'N/A'}</div>
+                    <div class="note-client">${note.clientName || 'Unknown Client'}</div>
+                    <div class="note-preview">${preview.substring(0, 60)}...</div>
+                `;
+                
+                notesList.appendChild(noteElement);
+            });
+        }
+
+        // Select note
+        function selectNote(noteId) {
+            currentNoteId = noteId;
+            const note = notes.find(n => n.id === noteId);
+            
+            if (!note) return;
+
+            // Update selected appearance
+            document.querySelectorAll('.note-item').forEach(item => item.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+
+            // Populate form
+            Object.keys(note).forEach(key => {
+                const element = document.getElementById(key);
+                if (element) {
+                    if (element.type === 'checkbox') {
+                        element.checked = note.safetyRisks?.includes(element.value) || false;
+                    } else {
+                        element.value = note[key] || '';
+                    }
+                }
+            });
+
+            // Handle safety risks
+            document.querySelectorAll('input[name="safetyRisk"]').forEach(checkbox => {
+                checkbox.checked = note.safetyRisks?.includes(checkbox.value) || false;
+            });
+        }
+
+        // Clear form
+        function clearForm() {
+            if (confirm('Are you sure you want to clear the form?')) {
+                document.getElementById('noteForm').reset();
+                currentNoteId = null;
+                setCurrentDate();
+                document.querySelectorAll('.note-item').forEach(item => item.classList.remove('selected'));
+            }
+        }
+
+        // Delete note
+        function deleteNote() {
+            if (!currentNoteId) {
+                alert('Please select a note to delete.');
+                return;
+            }
+
+            if (confirm('Are you sure you want to delete this note? This action cannot be undone.')) {
+                notes = notes.filter(note => note.id !== currentNoteId);
+                localStorage.setItem('therapyNotes', JSON.stringify(notes));
+                loadNotes();
+                clearForm();
+            }
+        }
+
+        // Search notes
+        function searchNotes() {
+            const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+            const noteItems = document.querySelectorAll('.note-item');
+
+            noteItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                item.style.display = text.includes(searchTerm) ? 'block' : 'none';
+            });
+        }
+
+        // Export notes
+        function exportNotes() {
+            if (notes.length === 0) {
+                alert('No notes to export.');
+                return;
+            }
+
+            const dataStr = JSON.stringify(notes, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = `therapy_notes_${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+        }
+
+        // Import notes
+        function importNotes() {
+            document.getElementById('importFile').click();
+        }
+
+        function handleFileImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedNotes = JSON.parse(e.target.result);
+                    if (Array.isArray(importedNotes)) {
+                        if (confirm(`Import ${importedNotes.length} notes? This will add to your existing notes.`)) {
+                            notes = [...notes, ...importedNotes];
+                            localStorage.setItem('therapyNotes', JSON.stringify(notes));
+                            loadNotes();
+                            alert('Notes imported successfully!');
+                        }
+                    } else {
+                        alert('Invalid file format. Please select a valid notes export file.');
+                    }
+                } catch (error) {
+                    alert('Error reading file. Please ensure it\'s a valid JSON file.');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case 's':
+                        e.preventDefault();
+                        saveNote();
+                        break;
+                    case 'n':
+                        e.preventDefault();
+                        clearForm();
+                        break;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
